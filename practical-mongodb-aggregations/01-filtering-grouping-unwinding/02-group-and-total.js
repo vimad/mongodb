@@ -9,7 +9,7 @@ const NumberDecimal = Decimal128.fromString;
 // You will group the individual order records by customer, capturing each customer's first purchase date, the number of orders they made,
 // the total value of all their orders, and a list of their order items sorted by date.
 
-const collection = db.collection('persons');
+const collection = db.collection('orders');
 await collection.drop();
 await collection.createIndex({"orderdate": -1});
 
