@@ -5,6 +5,7 @@ import { db } from '../client.js'
 
 const collection = db.collection('persons');
 await collection.drop();
+await collection.createIndex({"vocation": 1, "dateofbirth": 1});
 
 await seedData();
 const result = await collection.aggregate(getPipeline()).toArray();
@@ -41,7 +42,7 @@ function getPipeline() {
 }
 
 async function seedData() {
-    await collection.insertMany([
+    let data = [
         {
             "person_id": "6392529400",
             "firstname": "Elise",
@@ -115,7 +116,8 @@ async function seedData() {
                 "city": "Kenningford",
             },
         },
-    ]);
+    ];
+    await collection.insertMany(data);
 }
 
 // Pipeline observations
