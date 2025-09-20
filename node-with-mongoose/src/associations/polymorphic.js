@@ -276,9 +276,6 @@ LikePolymorphicSchema.index(likeUserIndex.fields, likeUserIndex.options);
 const likeableIndex = indexes.compound(['likeableType', 'likeableId'], { background: true });
 LikePolymorphicSchema.index(likeableIndex.fields, likeableIndex.options);
 
-// Tag indexes
-TagPolymorphicSchema.index({ name: 1 });
-
 // Compound index for active status and usage count (using utility)
 const tagActiveIndex = indexes.compound(['isActive', 'usageCount'], { background: true });
 TagPolymorphicSchema.index(tagActiveIndex.fields, tagActiveIndex.options);

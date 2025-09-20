@@ -244,23 +244,16 @@ const EmployeeSchema = new Schema({
 const categoryParentIndex = indexes.compound(['parent', 'sortOrder'], { background: true });
 CategorySchema.index(categoryParentIndex.fields, categoryParentIndex.options);
 
-// Index for path
-CategorySchema.index({ path: 1 });
-
 // Compound index for level and active status (using utility)
 const categoryLevelIndex = indexes.compound(['level', 'isActive'], { background: true });
 CategorySchema.index(categoryLevelIndex.fields, categoryLevelIndex.options);
 
-// Index for slug
-CategorySchema.index({ slug: 1 });
 
 // Comment indexes
 // Compound index for parent and creation date (using utility)
 const commentParentIndex = indexes.compound(['parent', 'createdAt'], { background: true });
 CommentSchema.index(commentParentIndex.fields, commentParentIndex.options);
 
-// Index for path
-CommentSchema.index({ path: 1 });
 
 // Compound index for level and approval status (using utility)
 const commentLevelIndex = indexes.compound(['level', 'isApproved'], { background: true });
@@ -274,15 +267,9 @@ CommentSchema.index({ 'author.email': 1 });
 const employeeManagerIndex = indexes.compound(['manager', 'level'], { background: true });
 EmployeeSchema.index(employeeManagerIndex.fields, employeeManagerIndex.options);
 
-// Index for path
-EmployeeSchema.index({ path: 1 });
-
 // Compound index for department and work level (using utility)
 const employeeDeptIndex = indexes.compound(['workInfo.department', 'workInfo.level'], { background: true });
 EmployeeSchema.index(employeeDeptIndex.fields, employeeDeptIndex.options);
-
-// Index for employee ID
-EmployeeSchema.index({ employeeId: 1 });
 
 // ============================================================================
 // VIRTUAL FIELDS (using utility functions)
