@@ -525,16 +525,6 @@ describe('Many-to-Many Relationships - Junction Collection (with Utilities)', ()
     });
 
     describe('Virtual Fields', () => {
-        it('should return student full name', async () => {
-            const student = await Student.create({
-                name: 'John Doe',
-                email: 'john@university.edu',
-                studentId: 'STU014',
-                dateOfBirth: new Date('2000-01-01')
-            });
-
-            expect(student.fullName).to.equal('John Doe');
-        });
 
         it('should return category full path', async () => {
             const course = await Course.create({

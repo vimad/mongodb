@@ -95,7 +95,7 @@ const CourseSchema = new Schema({
         required: [true, 'Course code is required'],
         unique: true,
         uppercase: true,
-        match: [/^[A-Z]{2,4}\d{3,4}$/, 'Course code must be 2-4 letters followed by 3-4 digits']
+        match: [/^[A-Z]{2,6}\d{3,4}$/, 'Course code must be 2-6 letters followed by 3-4 digits']
     },
     description: {
         type: String,
