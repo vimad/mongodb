@@ -178,54 +178,62 @@ export class BulkTransactionExample {
     /**
      * Transfer money using bulk operations
      */
-    static async transferMoney(fromAccountNumber, toAccountNumber, amount, throwError = false) {
-        const session = await mongoose.startSession();
+    static async transferMoney(fromAccountNumber, toAccountNumber, amount, throwError = false, maxRetries = 3) {
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+            const session = await mongoose.startSession();
 
-        try {
-            await session.startTransaction();
+            try {
+                await session.startTransaction();
 
-            // Prepare bulk operations
-            const bulkOps = [
-                {
-                    updateOne: {
-                        filter: {accountNumber: fromAccountNumber},
-                        update: {$inc: {balance: -amount}}
+                // Prepare bulk operations
+                const bulkOps = [
+                    {
+                        updateOne: {
+                            filter: {accountNumber: fromAccountNumber},
+                            update: {$inc: {balance: -amount}}
+                        }
+                    },
+                    {
+                        updateOne: {
+                            filter: {accountNumber: toAccountNumber},
+                            update: {$inc: {balance: amount}}
+                        }
                     }
-                },
-                {
-                    updateOne: {
-                        filter: {accountNumber: toAccountNumber},
-                        update: {$inc: {balance: amount}}
-                    }
+                ];
+
+                // Execute bulk operations
+                const result = await Account.bulkWrite(bulkOps, {session});
+
+                // Create transaction record
+                await Transaction.create([{
+                    fromAccount: fromAccountNumber,
+                    toAccount: toAccountNumber,
+                    amount: amount,
+                    status: 'completed'
+                }], {session});
+
+                if (throwError) throw new Error('Simulated error during transfer');
+
+                await session.commitTransaction();
+
+                return {
+                    success: true,
+                    modifiedCount: result.modifiedCount
+                };
+
+            } catch (error) {
+                await session.abortTransaction();
+                // Retry only transient transaction errors
+                if (error.hasErrorLabel && error.hasErrorLabel('TransientTransactionError')) {
+                    console.log(`Write conflict, retrying transaction (attempt ${attempt + 1})`);
+                    continue;
                 }
-            ];
-
-            // Execute bulk operations
-            const result = await Account.bulkWrite(bulkOps, {session});
-
-            // Create transaction record
-            await Transaction.create([{
-                fromAccount: fromAccountNumber,
-                toAccount: toAccountNumber,
-                amount: amount,
-                status: 'completed'
-            }], {session});
-
-            if (throwError) throw new Error('Simulated error during transfer');
-
-            await session.commitTransaction();
-
-            return {
-                success: true,
-                modifiedCount: result.modifiedCount
-            };
-
-        } catch (error) {
-            await session.abortTransaction();
-            throw error;
-        } finally {
-            await session.endSession();
+                throw error;
+            } finally {
+                await session.endSession();
+            }
         }
+        throw new Error('Transaction failed after maximum retries');
     }
 }
 

@@ -103,7 +103,7 @@ describe('Bulk Transaction Management', () => {
             const accounts = await Account.find({}).sort({ accountNumber: 1 });
             expect(accounts[0].balance).to.equal(875); // ACC001: 1000 - 50 - 75
             expect(accounts[1].balance).to.equal(525); // ACC002: 500 + 50 - 25
-            expect(accounts[2].balance).to.equal(35);  // ACC003: 100 + 75 - 10
+            expect(accounts[2].balance).to.equal(165);  // ACC003: 100 + 75 - 10
             expect(accounts[3].balance).to.equal(235); // ACC004: 200 + 25 + 10
         });
     });
