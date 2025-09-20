@@ -192,19 +192,6 @@ publishedPostCountVirtual.match = { status: 'published' };
 AuthorSchema.virtual('publishedPostCount', publishedPostCountVirtual);
 
 /**
- * Virtual field for total views across all posts
- */
-AuthorSchema.virtual('totalViews', {
-    ref: 'Post',
-    localField: '_id',
-    foreignField: 'author',
-    options: { 
-        match: { status: 'published' },
-        sort: { 'metrics.views': -1 }
-    }
-});
-
-/**
  * Virtual field for reading time calculation
  */
 PostSchema.virtual('estimatedReadingTime').get(function() {
