@@ -7,9 +7,10 @@ before((done) => {
     // authSource=admin required because my docker compose file init mongo with init script point to database named test
     // so mongoose by default connects to a database named test will fail to connect to a database named mongoose-test
     // This will not create the database if it doesn't exist. database + collection will create when do first insert with this session'
-    mongoose.connect('mongodb://root:123@localhost:27018/mongoose-test?authSource=admin');
+    mongoose.connect('mongodb://root:123@localhost:27017/mongoose-test?authSource=admin&replicaSet=rs0');
     mongoose.connection
         .once('open', () => {
+            console.log('Connected to MongoDB');
             done();
         })
         .on('error', (error) => {
