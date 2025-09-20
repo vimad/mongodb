@@ -320,7 +320,7 @@ CommentPolymorphicSchema.virtual('replies', commentRepliesVirtual);
  */
 const commentLikesVirtual = virtuals.createReverseRelationship('_id', 'likeableId', 'LikePolymorphic');
 commentLikesVirtual.match = { likeableType: 'Comment' };
-CommentPolymorphicSchema.virtual('likes', commentLikesVirtual);
+CommentPolymorphicSchema.virtual('likeRecords', commentLikesVirtual);
 
 /**
  * Virtual field for tag's associations (using utility)

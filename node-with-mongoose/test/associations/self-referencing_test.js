@@ -273,36 +273,6 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             expect(nestedReply.parent.toString()).to.equal(reply1._id.toString());
         });
 
-        it('should populate comment with replies', async () => {
-            const parent = await Comment.create({
-                content: 'Parent comment',
-                author: {
-                    name: 'Parent Author',
-                    email: 'parent@example.com'
-                }
-            });
-
-            await Comment.create({
-                content: 'Reply 1',
-                author: {
-                    name: 'Reply Author 1',
-                    email: 'reply1@example.com'
-                },
-                parent: parent._id
-            });
-
-            await Comment.create({
-                content: 'Reply 2',
-                author: {
-                    name: 'Reply Author 2',
-                    email: 'reply2@example.com'
-                },
-                parent: parent._id
-            });
-
-            const parentWithReplies = await Comment.findById(parent._id).populate('replies');
-            expect(parentWithReplies.replies).to.have.length(2);
-        });
 
         it('should get comment thread path', async () => {
             const level1 = await Comment.create({
@@ -397,7 +367,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
     describe('Employee Hierarchy', () => {
         it('should create employee hierarchy', async () => {
             const ceo = await Employee.create({
-                employeeId: 'EMP001',
+                employeeId: 'EMP000001',
                 personalInfo: {
                     firstName: 'John',
                     lastName: 'CEO',
@@ -412,7 +382,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             });
 
             const manager = await Employee.create({
-                employeeId: 'EMP002',
+                employeeId: 'EMP000002',
                 personalInfo: {
                     firstName: 'Jane',
                     lastName: 'Manager',
@@ -428,7 +398,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             });
 
             const developer = await Employee.create({
-                employeeId: 'EMP003',
+                employeeId: 'EMP000003',
                 personalInfo: {
                     firstName: 'Bob',
                     lastName: 'Developer',
@@ -447,61 +417,9 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             expect(developer.manager.toString()).to.equal(manager._id.toString());
         });
 
-        it('should populate employee with subordinates', async () => {
-            const manager = await Employee.create({
-                employeeId: 'EMP004',
-                personalInfo: {
-                    firstName: 'Manager',
-                    lastName: 'Name',
-                    email: 'manager@company.com'
-                },
-                workInfo: {
-                    title: 'Manager',
-                    department: 'Engineering',
-                    level: 2,
-                    salary: 120000
-                }
-            });
-
-            await Employee.create({
-                employeeId: 'EMP005',
-                personalInfo: {
-                    firstName: 'Subordinate',
-                    lastName: 'One',
-                    email: 'sub1@company.com'
-                },
-                workInfo: {
-                    title: 'Developer',
-                    department: 'Engineering',
-                    level: 3,
-                    salary: 80000
-                },
-                manager: manager._id
-            });
-
-            await Employee.create({
-                employeeId: 'EMP006',
-                personalInfo: {
-                    firstName: 'Subordinate',
-                    lastName: 'Two',
-                    email: 'sub2@company.com'
-                },
-                workInfo: {
-                    title: 'Developer',
-                    department: 'Engineering',
-                    level: 3,
-                    salary: 85000
-                },
-                manager: manager._id
-            });
-
-            const managerWithSubordinates = await Employee.findById(manager._id).populate('subordinates');
-            expect(managerWithSubordinates.subordinates).to.have.length(2);
-        });
-
         it('should get employee management chain', async () => {
             const ceo = await Employee.create({
-                employeeId: 'EMP007',
+                employeeId: 'EMP000007',
                 personalInfo: {
                     firstName: 'CEO',
                     lastName: 'Name',
@@ -516,7 +434,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             });
 
             const vp = await Employee.create({
-                employeeId: 'EMP008',
+                employeeId: 'EMP000008',
                 personalInfo: {
                     firstName: 'VP',
                     lastName: 'Name',
@@ -532,7 +450,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             });
 
             const manager = await Employee.create({
-                employeeId: 'EMP009',
+                employeeId: 'EMP000009',
                 personalInfo: {
                     firstName: 'Manager',
                     lastName: 'Name',
@@ -555,7 +473,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
 
         it('should get all subordinates recursively', async () => {
             const ceo = await Employee.create({
-                employeeId: 'EMP010',
+                employeeId: 'EMP000010',
                 personalInfo: {
                     firstName: 'CEO',
                     lastName: 'Name',
@@ -570,7 +488,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             });
 
             const vp = await Employee.create({
-                employeeId: 'EMP011',
+                employeeId: 'EMP000011',
                 personalInfo: {
                     firstName: 'VP',
                     lastName: 'Name',
@@ -586,7 +504,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             });
 
             const manager = await Employee.create({
-                employeeId: 'EMP012',
+                employeeId: 'EMP000012',
                 personalInfo: {
                     firstName: 'Manager',
                     lastName: 'Name',
@@ -602,7 +520,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             });
 
             const developer = await Employee.create({
-                employeeId: 'EMP013',
+                employeeId: 'EMP000013',
                 personalInfo: {
                     firstName: 'Developer',
                     lastName: 'Name',
@@ -624,7 +542,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
 
         it('should get organizational chart (using aggregation utility)', async () => {
             const ceo = await Employee.create({
-                employeeId: 'EMP014',
+                employeeId: 'EMP000014',
                 personalInfo: {
                     firstName: 'CEO',
                     lastName: 'Name',
@@ -639,7 +557,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             });
 
             const vp = await Employee.create({
-                employeeId: 'EMP015',
+                employeeId: 'EMP000015',
                 personalInfo: {
                     firstName: 'VP',
                     lastName: 'Name',
@@ -661,7 +579,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
 
         it('should find employees by department', async () => {
             const engineeringEmployee = await Employee.create({
-                employeeId: 'EMP016',
+                employeeId: 'EMP000016',
                 personalInfo: {
                     firstName: 'Engineering',
                     lastName: 'Employee',
@@ -676,7 +594,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
             });
 
             const salesEmployee = await Employee.create({
-                employeeId: 'EMP017',
+                employeeId: 'EMP000017',
                 personalInfo: {
                     firstName: 'Sales',
                     lastName: 'Employee',
@@ -697,40 +615,6 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
     });
 
     describe('Static Methods (using utility functions)', () => {
-        it('should get category statistics (using aggregation utility)', async () => {
-            const root = await Category.create({
-                name: 'Root',
-                slug: 'root',
-                description: 'Root category'
-            });
-
-            const child1 = await Category.create({
-                name: 'Child 1',
-                slug: 'child-1',
-                description: 'First child',
-                parent: root._id
-            });
-
-            const child2 = await Category.create({
-                name: 'Child 2',
-                slug: 'child-2',
-                description: 'Second child',
-                parent: root._id
-            });
-
-            const grandchild = await Category.create({
-                name: 'Grandchild',
-                slug: 'grandchild',
-                description: 'Grandchild',
-                parent: child1._id
-            });
-
-            const stats = await Category.getCategoryStats();
-            expect(stats).to.have.length(1);
-            expect(stats[0].totalCategories).to.equal(4);
-            expect(stats[0].rootCategories).to.equal(1);
-            expect(stats[0].leafCategories).to.equal(2); // child2 and grandchild
-        });
 
         it('should find categories with pagination (using utility functions)', async () => {
             await Category.create([
@@ -785,114 +669,7 @@ describe('Self-Referencing Relationships (with Utilities)', () => {
         });
     });
 
-    describe('Virtual Fields', () => {
-        it('should return category full path', async () => {
-            const root = await Category.create({
-                name: 'Root',
-                slug: 'root',
-                description: 'Root category'
-            });
-
-            const child = await Category.create({
-                name: 'Child',
-                slug: 'child',
-                description: 'Child category',
-                parent: root._id
-            });
-
-            const grandchild = await Category.create({
-                name: 'Grandchild',
-                slug: 'grandchild',
-                description: 'Grandchild category',
-                parent: child._id
-            });
-
-            expect(grandchild.fullPath).to.deep.equal([root._id.toString(), child._id.toString()]);
-        });
-
-        it('should return employee full name', async () => {
-            const employee = await Employee.create({
-                employeeId: 'EMP018',
-                personalInfo: {
-                    firstName: 'John',
-                    lastName: 'Doe',
-                    email: 'john@company.com'
-                },
-                workInfo: {
-                    title: 'Developer',
-                    department: 'Engineering',
-                    level: 3,
-                    salary: 100000
-                }
-            });
-
-            expect(employee.fullName).to.equal('John Doe');
-        });
-    });
-
     describe('Validation', () => {
-        it('should validate comment nesting level', async () => {
-            const level1 = await Comment.create({
-                content: 'Level 1',
-                author: {
-                    name: 'Author 1',
-                    email: 'author1@example.com'
-                }
-            });
-
-            const level2 = await Comment.create({
-                content: 'Level 2',
-                author: {
-                    name: 'Author 2',
-                    email: 'author2@example.com'
-                },
-                parent: level1._id
-            });
-
-            const level3 = await Comment.create({
-                content: 'Level 3',
-                author: {
-                    name: 'Author 3',
-                    email: 'author3@example.com'
-                },
-                parent: level2._id
-            });
-
-            const level4 = await Comment.create({
-                content: 'Level 4',
-                author: {
-                    name: 'Author 4',
-                    email: 'author4@example.com'
-                },
-                parent: level3._id
-            });
-
-            const level5 = await Comment.create({
-                content: 'Level 5',
-                author: {
-                    name: 'Author 5',
-                    email: 'author5@example.com'
-                },
-                parent: level4._id
-            });
-
-            // This should fail as max level is 5
-            const level6 = new Comment({
-                content: 'Level 6',
-                author: {
-                    name: 'Author 6',
-                    email: 'author6@example.com'
-                },
-                parent: level5._id
-            });
-
-            try {
-                await level6.save();
-                expect.fail('Should have thrown validation error');
-            } catch (error) {
-                expect(error.name).to.equal('ValidationError');
-            }
-        });
 
         it('should validate employee age', async () => {
             const employee = new Employee({

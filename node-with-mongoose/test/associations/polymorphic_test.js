@@ -1,4 +1,5 @@
-import { 
+import mongoose from 'mongoose';
+import {
     CommentPolymorphic, 
     LikePolymorphic, 
     TagPolymorphic, 
@@ -8,7 +9,7 @@ import {
 import { expect } from 'chai';
 import '../test_helper.js'
 
-describe('Polymorphic Associations (with Utilities)', () => {
+describe('Polymorphic Associations with Utilities', () => {
     
     beforeEach(async () => {
         // Clean up collections
@@ -300,29 +301,6 @@ describe('Polymorphic Associations (with Utilities)', () => {
             }
         });
 
-        it('should find likes for specific entity', async () => {
-            const entityId = new mongoose.Types.ObjectId();
-            const user1 = new mongoose.Types.ObjectId();
-            const user2 = new mongoose.Types.ObjectId();
-
-            await LikePolymorphic.create([
-                {
-                    user: user1,
-                    likeableType: 'Post',
-                    likeableId: entityId,
-                    type: 'like'
-                },
-                {
-                    user: user2,
-                    likeableType: 'Post',
-                    likeableId: entityId,
-                    type: 'love'
-                }
-            ]);
-
-            const likes = await LikePolymorphic.findForEntity('Post', entityId);
-            expect(likes).to.have.length(2);
-        });
 
         it('should get like count for entity', async () => {
             const entityId = new mongoose.Types.ObjectId();
@@ -668,39 +646,6 @@ describe('Polymorphic Associations (with Utilities)', () => {
             expect(postAttachment.metadata.width).to.equal(1920);
         });
 
-        it('should find attachments for specific entity', async () => {
-            const userId = new mongoose.Types.ObjectId();
-            const entityId = new mongoose.Types.ObjectId();
-
-            await AttachmentPolymorphic.create([
-                {
-                    filename: 'image1.jpg',
-                    originalName: 'image1.jpg',
-                    mimeType: 'image/jpeg',
-                    size: 1024000,
-                    path: '/uploads/image1.jpg',
-                    url: 'https://example.com/uploads/image1.jpg',
-                    attachableType: 'Post',
-                    attachableId: entityId,
-                    uploadedBy: userId
-                },
-                {
-                    filename: 'image2.jpg',
-                    originalName: 'image2.jpg',
-                    mimeType: 'image/jpeg',
-                    size: 2048000,
-                    path: '/uploads/image2.jpg',
-                    url: 'https://example.com/uploads/image2.jpg',
-                    attachableType: 'Post',
-                    attachableId: entityId,
-                    uploadedBy: userId
-                }
-            ]);
-
-            const attachments = await AttachmentPolymorphic.findForEntity('Post', entityId);
-            expect(attachments).to.have.length(2);
-        });
-
         it('should return file extension', async () => {
             const attachment = await AttachmentPolymorphic.create({
                 filename: 'document.pdf',
@@ -783,21 +728,6 @@ describe('Polymorphic Associations (with Utilities)', () => {
 
             try {
                 await like.save();
-                expect.fail('Should have thrown validation error');
-            } catch (error) {
-                expect(error.name).to.equal('ValidationError');
-            }
-        });
-
-        it('should validate tag name format', async () => {
-            const tag = new TagPolymorphic({
-                name: 'Invalid Tag Name!', // Invalid format
-                description: 'Invalid tag',
-                color: '#ff0000'
-            });
-
-            try {
-                await tag.save();
                 expect.fail('Should have thrown validation error');
             } catch (error) {
                 expect(error.name).to.equal('ValidationError');

@@ -285,13 +285,13 @@ CategorySchema.virtual('children', categoryChildrenVirtual);
  * Virtual field for comment's replies (using utility)
  */
 const commentRepliesVirtual = virtuals.createReverseRelationship('_id', 'parent', 'Comment');
-CommentSchema.virtual('replies', commentRepliesVirtual);
+CommentSchema.virtual('replyRecords', commentRepliesVirtual);
 
 /**
  * Virtual field for employee's subordinates (using utility)
  */
 const employeeSubordinatesVirtual = virtuals.createReverseRelationship('_id', 'manager', 'Employee');
-EmployeeSchema.virtual('subordinates', employeeSubordinatesVirtual);
+EmployeeSchema.virtual('subordinateRecords', employeeSubordinatesVirtual);
 
 /**
  * Virtual field for category's full path
