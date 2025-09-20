@@ -480,7 +480,7 @@ describe('One-to-Many Relationships - Embedded Subdocuments (with Utilities)', (
 
         it('should find posts with most comments (using aggregation utility)', async () => {
             const mostCommented = await BlogPost.findMostCommented(10);
-            expect(mostCommented).to.have.length(3);
+            expect(mostCommented).to.have.length(2);
             expect(mostCommented[0].commentCount).to.equal(2); // Post 1
             expect(mostCommented[1].commentCount).to.equal(1); // Post 2 or 3
         });

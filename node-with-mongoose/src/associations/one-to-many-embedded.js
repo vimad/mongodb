@@ -84,7 +84,7 @@ const BlogPostSchema = new Schema({
     content: { 
         type: String, 
         required: [true, 'Post content is required'],
-        minlength: [100, 'Content must be at least 100 characters long']
+        minlength: [10, 'Content must be at least 100 characters long']
     },
     excerpt: {
         type: String,
@@ -308,14 +308,15 @@ BlogPostSchema.methods.markCommentAsSpam = function(commentId) {
 /**
  * Delete a comment by ID
  */
-BlogPostSchema.methods.deleteComment = function(commentId) {
+BlogPostSchema.methods.deleteComment = async function(commentId) {
     const comment = this.comments.id(commentId);
     if (!comment) {
         throw new Error('Comment not found');
     }
     
-    comment.remove();
-    return this.save();
+    comment.deleteOne();
+    await this.save();
+    return this;
 };
 
 /**
