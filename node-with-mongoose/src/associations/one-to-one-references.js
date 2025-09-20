@@ -102,9 +102,17 @@ const ProfileSchema = new Schema({
         type: Schema.Types.ObjectId, 
         ref: 'UserWithReference', 
         required: [true, 'User reference is required'],
-        unique: true // Ensures one-to-one relationship
+        unique: true, // Ensures one-to-one relationship
+        validate: {
+            validator: async function (value) {
+                const userExists = await mongoose.model('UserWithReference').exists({ _id: value });
+                return !!userExists;
+            },
+            message: 'Referenced user does not exist'
+        }
     }
 }, {
+    // timestamp fields are added automatically by Mongoose
     timestamps: true
 });
 
@@ -116,6 +124,7 @@ const ProfileSchema = new Schema({
 UserWithReferenceSchema.index({ email: 1 });
 
 // Compound index for user queries (using utility)
+// index will build in background
 const userActiveIndex = indexes.compound(['isActive', 'lastLoginAt'], { background: true });
 UserWithReferenceSchema.index(userActiveIndex.fields, userActiveIndex.options);
 

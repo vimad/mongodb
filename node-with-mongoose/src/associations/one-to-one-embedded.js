@@ -183,6 +183,8 @@ UserWithEmbeddedAddressSchema.statics.findWithProjection = function(filters = {}
 
 /**
  * Virtual field for formatted address
+ * This is a computed virtual.
+ * These are calculated properties that don’t exist in MongoDB, but are derived from existing document fields.
  */
 UserWithEmbeddedAddressSchema.virtual('formattedAddress').get(function() {
     return this.getFullAddress();

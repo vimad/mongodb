@@ -86,6 +86,7 @@ export const indexes = {
 
     /**
      * Creates a sparse index (ignores null values)
+     * index only if fields exist in the document
      */
     sparse(fields, options = {}) {
         return { fields, options: { ...options, sparse: true } };
