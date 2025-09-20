@@ -5,9 +5,10 @@ import "./test_helper.js";
 describe('Deleting a user', () => {
     let joe;
 
-    beforeEach((done) => {
+    beforeEach(async () => {
+        await User.deleteMany({});
         joe = new User({name: 'Joe'});
-        joe.save().then(() => done());
+        await joe.save();
     });
 
     it('model instance remove', (done) => {

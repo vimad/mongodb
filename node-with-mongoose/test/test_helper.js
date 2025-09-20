@@ -17,13 +17,13 @@ before((done) => {
         });
 });
 
-beforeEach((done) => {
+beforeEach(() => {
     // callback way
     // If the only users collection is there in the database, it will also be dropped automatically.
-    mongoose.connection.collections.users.drop(() => {
-        // Ready to run the next test!
-        done();
-    });
+    // mongoose.connection.collections.users.drop(() => {
+    //     // Ready to run the next test!
+    //     done();
+    // });
 
     // async/await way (remove done in it callback and make it async)
     // await mongoose.connection.collections.users.drop();

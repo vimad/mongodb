@@ -5,10 +5,10 @@ import "./test_helper.js";
 describe('Reading users out of the database', () => {
     let joe;
 
-    beforeEach((done) => {
+    beforeEach(async () => {
+        await User.deleteMany({});
         joe = new User({name: 'Joe'});
-        joe.save()
-            .then(() => done());
+        await joe.save();
     });
 
     it('finds all users with a name of joe', (done) => {

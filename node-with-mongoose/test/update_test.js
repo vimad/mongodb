@@ -5,9 +5,10 @@ import "./test_helper.js";
 describe('Updating records', () => {
     let joe;
 
-    beforeEach((done) => {
+    beforeEach(async () => {
+        await User.deleteMany({});
         joe = new User({name: 'Joe'});
-        joe.save().then(() => done());
+        await joe.save();
     });
 
     function assertName(operation, done) {
