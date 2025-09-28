@@ -1,0 +1,247 @@
+import {db} from '../client.js'
+import {Decimal128} from 'mongodb'
+import util from "util";
+
+const NumberDecimal = Decimal128.fromString;
+/*
+Scenario
+
+You are monitoring various industrial devices (e.g., heaters and fans) contained in the business locations of your clients.
+You want to understand the typical patterns of when these devices are on and off to help you optimize for sustainability
+by reducing energy costs and their carbon footprint. The source database contains periodic readings for every device,
+capturing whether each is currently on or off.
+You need a less verbose view that condenses this data, highlighting each device's timespan in a particular on or off state.
+*/
+const deviceStatusCollection = db.collection('device_status');
+await deviceStatusCollection.drop();
+
+await db.createCollection("device_status", {
+    "timeseries": {
+        "timeField": "timestamp",
+        "metaField": "deviceID",
+        "granularity": "minutes"
+    }
+});
+await deviceStatusCollection.createIndex({"deviceID": 1, "timestamp": 1});
+
+await seedData();
+const result = await deviceStatusCollection.aggregate(getPipeline()).toArray();
+console.log(util.inspect(result, {depth: null, colors: true}));
+
+function getPipeline() {
+    return [
+        // Capture previous+next records' state into new fields in current record
+        {
+            "$setWindowFields": {
+                "partitionBy": "$deviceID",
+                "sortBy": {"timestamp": 1},
+                "output": {
+                    "previousState": {
+                        "$shift": {
+                            "output": "$state",
+                            "by": -1,
+                        }
+                    },
+                    "nextState": {
+                        "$shift": {
+                            "output": "$state",
+                            "by": 1,
+                        }
+                    },
+                }
+            }
+        },
+        // Use current record's timestamp as "startTimestamp" only if state
+        // changed from previous record in series, and only set "endMarkerDate"
+        // to current record's timestamp if the state changes between current
+        // and next records in the series
+        {
+            "$set": {
+                "startTimestamp": {
+                    "$cond": [
+                        {"$eq": ["$state", "$previousState"]},
+                        "$$REMOVE",
+                        "$timestamp",
+                    ]
+                },
+                "endMarkerDate": {
+                    "$cond": [
+                        {"$eq": ["$state", "$nextState"]},
+                        "$$REMOVE",
+                        "$timestamp",
+                    ]
+                },
+            }
+        },
+
+        // Only keep records where the state has just changed or is just about
+        // to change - therefore, this will be mostly start/end pairs, but not
+        // always, if the state change only lasted one record
+        {
+            "$match": {
+                "$expr": {
+                    "$or": [
+                        {"$ne": ["$state", "$previousState"]},
+                        {"$ne": ["$state", "$nextState"]},
+                    ]
+                }
+            }
+        },
+
+        // Set "nextMarkerDate" to the timestamp of the next record in the
+        // series - this will be set to 'null', if there is no no next record,
+        // to indicate 'unbounded'
+        {
+            "$setWindowFields": {
+                "partitionBy": "$deviceID",
+                "sortBy": {"timestamp": 1},
+                "output": {
+                    "nextMarkerDate": {
+                        "$shift": {
+                            "output": "$timestamp",
+                            "by": 1,
+                        }
+                    },
+                }
+            }
+        },
+        // Only keep records at the start of the state change boundaries (throw
+        // away matching pair end records, if any)
+        {
+            "$match": {
+                "$expr": {
+                    "$ne": ["$state", "$previousState"],
+                }
+            }
+        },
+
+        // If no boundary after this record (it's the last matching record in
+        // the series), set "endTimestamp" as unbounded (null).
+        //
+        // Otherwise, if this start boundary record was also an end boundary
+        // record (not paired - with only 1 record before state changed), set
+        // "endTimestamp" to end timestamp.
+        //
+        // Otherwise, set "endTimestamp" to what was the captured timestamp
+        // from the original matching pair in the series (where the end paired
+        // record has since been removed).
+        {
+            "$set": {
+                "endTimestamp": {
+                    "$switch": {
+                        "branches": [
+                            // Unbounded, so no final timestamp in series
+                            {
+                                "case":
+                                    {"$eq": [{"$type": "$nextMarkerDate"}, "null"]},
+                                "then": null
+                            },
+                            // Use end timestamp from what was same end record as start record
+                            {
+                                "case":
+                                    {"$ne": [{"$type": "$endMarkerDate"}, "missing"]},
+                                "then": "$endMarkerDate"
+                            },
+                        ],
+                        // Use timestamp from what was an end record paired with
+                        // separate start record
+                        "default": "$nextMarkerDate",
+                    }
+                },
+            }
+        },
+        // Remove unwanted fields from the final result
+        {
+            "$unset": [
+                "_id",
+                "timestamp",
+                "previousState",
+                "nextState",
+                "endMarkerDate",
+                "nextMarkerDate",
+            ]
+        }
+    ];
+}
+
+async function seedData() {
+    await deviceStatusCollection.insertMany([
+        {
+            "deviceID": "HEATER-111",
+            "timestamp": new Date("2021-07-03T11:09:00Z"),
+            "state": "on",
+        },
+        {
+            "deviceID": "FAN-999",
+            "timestamp": new Date("2021-07-03T11:09:00Z"),
+            "state": "on",
+        },
+        {
+            "deviceID": "HEATER-111",
+            "timestamp": new Date("2021-07-03T11:19:00Z"),
+            "state": "on",
+        },
+        {
+            "deviceID": "HEATER-111",
+            "timestamp": new Date("2021-07-03T11:29:00Z"),
+            "state": "on",
+        },
+        {
+            "deviceID": "FAN-999",
+            "timestamp": new Date("2021-07-03T11:39:00Z"),
+            "state": "off",
+        },
+        {
+            "deviceID": "HEATER-111",
+            "timestamp": new Date("2021-07-03T11:39:00Z"),
+            "state": "off",
+        },
+        {
+            "deviceID": "HEATER-111",
+            "timestamp": new Date("2021-07-03T11:49:00Z"),
+            "state": "off",
+        },
+        {
+            "deviceID": "HEATER-111",
+            "timestamp": new Date("2021-07-03T11:59:00Z"),
+            "state": "on",
+        },
+        {
+            "deviceID": "DEHUMIDIFIER-555",
+            "timestamp": new Date("2021-07-03T11:29:00Z"),
+            "state": "on",
+        },
+    ]);
+}
+
+/*
+
+Pipeline observations
+
+Null end timestamps: The last record for each specific device has the value of its endTimestamp field set to null.
+The null value indicates that this record contains the final known state of the device.
+
+Peeking at one document from another: You can apply aggregation operations spanning multiple documents using the windowing stage
+($setWindowFields). Combined with its shift operator ($shift), you can peek at the content of preceding or following
+documents and bring some of that other document's content into the current document. In this example, you copy the device's
+state from the previous document (-1 offset) and the following document (+1 offset) into the current document. Capturing
+these adjacent values enables subsequent stages in your pipeline to determine whether the current device has changed state.
+Using $shift relies on the documents already being partitioned (e.g., by device ID) and sorted (e.g., by timestamp),
+which the containing $setWindowFields stage is enforcing.
+
+Double use of a windowing stage: The pipeline's first windowing stage and the subsequent matching stage capture device
+documents where the device's state has changed from on to off or vice versa. In many cases, this results in adjacent pairs
+of documents where the first document in the pair captures the first time the device has a new state, and the second document
+captures the last time it was in that same state before changing again. The example pipeline requires another windowing stage
+to condense each pair of boundary documents into one document. This second windowing stage again uses a shift operator to bring
+the timestamp of the pair's second document into a new field in the pair's first document. Consequently, single documents now exist
+containing both the start and end timestamps of a particular device's state. Finally, the pipeline employs further logic to clean
+things up because, in some situations, there won't be a pair of related documents. For example, if a device's recorded state changes
+and immediately changes again, or it's the last recorded state of the device, there will be no paired document marking the end state.
+
+Time-series collection and indexes: As with the previous example, the aggregation can optionally use a time-series collection
+to store sequences of device measurements over time for efficient storage and fast querying. Additionally, as with the previous example,
+the aggregation can leverage an index for {deviceID: 1, timestamp: 1} to avoid the $setWindowFields stage having to perform a slow
+in-memory sort operation.
+
+ */
