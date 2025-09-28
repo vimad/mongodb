@@ -5,7 +5,8 @@ const url = 'mongodb://root:123@localhost:27017/aggregation-test?authSource=admi
 const client = new MongoClient(url);
 
 // Database Name
-const dbName = 'test';
+export const dbName = 'aggregation-test';
 
 await client.connect();
 export const db = client.db(dbName);
+export const adminDb = client.db("admin");
