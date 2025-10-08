@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import {Account, Transaction} from './models.js';
+import util from "util";
 
 // ============================================================================
 // ACID TRANSACTION EXAMPLES - DIFFERENT APPROACHES
@@ -53,6 +54,7 @@ export class ManualTransactionExample {
                 };
 
             } catch (error) {
+                console.log(util.inspect(error, {depth: null, colors: true}));
                 await session.abortTransaction();
                 // Retry only transient transaction errors
                 if (error.hasErrorLabel && error.hasErrorLabel('TransientTransactionError')) {
